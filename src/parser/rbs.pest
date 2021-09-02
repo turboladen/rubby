@@ -1,0 +1,10 @@
+module = {
+  "module" ~ type_name ~ NEWLINE
+  ~ "end"
+}
+
+type_name = { namespace? ~ path_element }
+namespace = { (path_element ~ "::")+ }
+path_element = { ASCII_ALPHA_UPPER ~ ASCII_ALPHANUMERIC* }
+
+WHITESPACE = _{ " " }
