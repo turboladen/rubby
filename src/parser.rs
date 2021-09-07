@@ -7,128 +7,47 @@ use std::ops::RangeTo;
 
 pub mod ast;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Parser)]
 #[grammar = "parser/rbs.pest"]
 pub struct RbsParser;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use pest::{consumes_to, parses_to};
+pub fn parse<'input>(input: &'input str) -> Result<Vec<Declaration<'input>>, String> {
+    todo!();
+}
 
-    #[test]
-    fn path_element_test() {
-        let ruby = "Foo::Bar";
+pub enum Location<'input> {
+    WithChildren {
+        buffer: String,
+        start_pos: usize,
+        end_pos: usize,
+        optional_children: Vec<()>,
+        required_children: Vec<()>,
+        start_loc: usize,
+        source: &'input str,
+    },
+}
 
-        parses_to! {
-            parser: RbsParser,
-            input:  ruby,
-            rule:   Rule::path_element,
-            tokens: [path_element(0, 3)]
-        };
-    }
+pub struct TypeName<'input> {
+    namespace: Namespace,
+    name: &'input str,
+    kind: TypeKind,
+}
 
-    #[test]
-    fn namespace_test() {
-        let ruby = "Foo::Bar";
+pub enum TypeKind {
+    Class,
+}
 
-        parses_to! {
-            parser: RbsParser,
-            input:  ruby,
-            rule:   Rule::namespace,
-            tokens: [namespace(0, 5, [
-                path_element(0, 3)
-            ])]
-        };
+pub struct Namespace {
+    path: Vec<()>,
+    absolute: bool,
+}
 
-        let ruby = "Foo::Bar::Baz";
-
-        parses_to! {
-            parser: RbsParser,
-            input:  ruby,
-            rule:   Rule::namespace,
-            tokens: [namespace(0, 10, [
-                path_element(0, 3),
-                path_element(5, 8)
-            ])]
-        };
-    }
-
-    #[test]
-    fn type_name_test() {
-        let ruby = "Bar";
-
-        parses_to! {
-            parser: RbsParser,
-            input:  ruby,
-            rule:   Rule::type_name,
-            tokens: [type_name(0, 3, [
-                path_element(0, 3)
-            ])]
-        };
-
-        let ruby = "Foo::Bar";
-
-        parses_to! {
-            parser: RbsParser,
-            input:  ruby,
-            rule:   Rule::type_name,
-            tokens: [type_name(0, 8, [
-                namespace(0, 5, [
-                    path_element(0, 3)
-                ]),
-                path_element(5, 8)
-            ]
-            )]
-        };
-
-        let ruby = "Foo::Bar::Baz";
-
-        parses_to! {
-            parser: RbsParser,
-            input:  ruby,
-            rule:   Rule::type_name,
-            tokens: [type_name(0, 13, [
-                namespace(0, 10, [
-                    path_element(0, 3),
-                    path_element(5, 8)
-                ]),
-                path_element(10, 13)
-            ])]
-        };
-    }
-
-    #[test]
-    fn module_test() {
-        let ruby = "module Bar; end";
-        assert!(RbsParser::parse(Rule::module, ruby).is_err());
-
-        let ruby = "module Bar\nend";
-
-        parses_to! {
-            parser: RbsParser,
-            input:  ruby,
-            rule:   Rule::module,
-            tokens: [module(0, 14, [
-                type_name(7, 10, [
-                    path_element(7, 10)
-                ])
-            ])]
-        };
-
-        // let ruby = r#"module Bar
-        //         def foo: -> void
-        //     end"#;
-
-        // parses_to! {
-        //     parser: RbsParser,
-        //     input:  ruby,
-        //     rule:   Rule::module,
-        //     tokens: [module(0, 15, [
-        //         type_name(7, 10, [
-        //             path_element(8, 11)
-        //         ])
-        //     ])]
-        // };
-    }
+pub struct Buffer<'input> {
+    name: Option<String>,
+    content: &'input str,
+    lines: Vec<&'input str>,
+    ranges: Vec<RangeTo<usize>>,
 }
