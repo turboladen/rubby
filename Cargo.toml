@@ -3,7 +3,15 @@ name = "rubby"
 version = "0.1.0"
 edition = "2018"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+lib-ruby-parser = "3.0"
 rutie = "0.8"
+tokio = "1.10"
+
+[dev-dependencies]
+tokio = { version = "1.10", features = ["test-util", "macros"] }

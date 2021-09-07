@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "rubby/version"
+require "rubby/version"
+require "rutie"
+require "rbs"
 
+# Makin the rubbies oh so good...
 module Rubby
-  class Error < StandardError; end
-  # Your code goes here...
+  Rutie.new(:rubby).init "init_rubby", __dir__
 end
