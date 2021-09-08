@@ -1,7 +1,7 @@
-module = {
-  "module" ~ whitespace+ ~ type_name ~ whitespace* ~ NEWLINE
-  ~ "end"
-}
+// module = {
+//   "module" ~ whitespace+ ~ type_name ~ whitespace* ~ NEWLINE
+//   ~ "end"
+// }
 
 //-----------------------------------------------------------------------------
 // Types
@@ -23,9 +23,12 @@ t_type = {
   | t_void
 }
 
-t_class_name = { namespace? ~ ASCII_ALPHA_UPPER ~ slash_w* }
-t_interface_name = { namespace? ~ "_" ~ ASCII_ALPHA_UPPER ~ slash_w* }
-t_alias_name = { namespace? ~ ASCII_ALPHA_LOWER ~ slash_w* }
+t_class_name = {
+    (t_namespace ~ path_element)
+    | path_element
+}
+t_interface_name = { t_namespace? ~ "_" ~ ASCII_ALPHA_UPPER ~ slash_w* }
+t_alias_name = { t_namespace? ~ ASCII_ALPHA_LOWER ~ slash_w* }
 t_type_variable = { ASCII_ALPHA_UPPER ~ slash_w* }
 
 t_type_arguments = {
@@ -72,6 +75,13 @@ global_variable = {
 }
 method_name = { ("_" | ASCII_ALPHA_LOWER) ~ slash_w* ~ ("!" | "=" | "?")? }
 
+// type_name = { namespace? ~ path_element }
+t_namespace = { 
+    "::"
+    | (path_element ~ "::")+
+}
+path_element = { ASCII_ALPHA_UPPER ~ slash_w* }
+
 t_self = { "self" }
 t_instance = { "instance" }
 t_class = { "class" }
@@ -85,10 +95,6 @@ t_void = { "void" }
 
 
 
-
-type_name = { namespace? ~ path_element }
-namespace = { (path_element ~ "::")+ }
-path_element = { ASCII_ALPHA_UPPER ~ ASCII_ALPHANUMERIC* }
 
 //-----------------------------------------------------------------------------
 // Method Types
@@ -120,3 +126,5 @@ var_name = { ASCII_ALPHA_LOWER+ ~ slash_w* }
 //-----------------------------------------------------------------------------
 whitespace = _{ " " | "\t" }
 slash_w = _{ ASCII_ALPHANUMERIC | "_" }
+
+// vim: ft=rust

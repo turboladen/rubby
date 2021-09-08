@@ -161,3 +161,95 @@ fn t_symbol_literal_test() {
         };
     }
 }
+
+#[test]
+fn t_namespace_test() {
+    let ruby = "Foo::Bar";
+
+    parses_to! {
+        parser: RbsParser, input: ruby, rule: Rule::t_namespace,
+        tokens: [t_namespace(0, 5, [
+            path_element(0, 3)
+        ])]
+    };
+
+    let ruby = "Foo::Bar::Baz";
+
+    parses_to! {
+        parser: RbsParser, input: ruby, rule: Rule::t_namespace,
+        tokens: [t_namespace(0, 10, [
+            path_element(0, 3),
+            path_element(5, 8)
+        ])]
+    };
+}
+
+#[test]
+fn t_class_name_test() {
+    assert!(RbsParser::parse(Rule::t_class_name, "foo").is_err());
+
+    // No namespace
+    {
+        parses_to! {
+            parser: RbsParser, input: "Foo", rule: Rule::t_class_name,
+            tokens: [t_class_name(0, 3, [
+                path_element(0, 3)
+            ])]
+        };
+
+        parses_to! {
+            parser: RbsParser, input: "FOO", rule: Rule::t_class_name,
+            tokens: [t_class_name(0, 3, [
+                path_element(0, 3)
+            ])]
+        };
+
+        parses_to! {
+            parser: RbsParser, input: "FOO_BAR", rule: Rule::t_class_name,
+            tokens: [t_class_name(0, 7, [
+                path_element(0, 7)
+            ])]
+        };
+    }
+
+    // One namespace
+    {
+        parses_to! {
+            parser: RbsParser, input: "Foo::Bar", rule: Rule::t_class_name,
+            tokens: [t_class_name(0, 8, [
+                t_namespace(0, 5, [path_element(0, 3)]),
+                path_element(5, 8)
+            ])]
+        };
+
+        parses_to! {
+            parser: RbsParser, input: "FOO::BAR", rule: Rule::t_class_name,
+            tokens: [t_class_name(0, 8, [
+                t_namespace(0, 5, [path_element(0, 3)]),
+                path_element(5, 8)
+            ])]
+        };
+
+        parses_to! {
+            parser: RbsParser, input: "FOO_BAR::BAZ_MEOW", rule: Rule::t_class_name,
+            tokens: [t_class_name(0, 17, [
+                t_namespace(0, 9, [path_element(0, 7)]),
+                path_element(9, 17)
+            ])]
+        };
+    }
+
+    // Two namespaces
+    {
+        parses_to! {
+            parser: RbsParser, input: "Foo1::Bar2::Baz3", rule: Rule::t_class_name,
+            tokens: [t_class_name(0, 16, [
+                t_namespace(0, 12, [
+                    path_element(0, 4),
+                    path_element(6, 10),
+                ]),
+                path_element(12, 16)
+            ])]
+        };
+    }
+}
