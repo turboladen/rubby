@@ -44,19 +44,33 @@ t_proc = {
   "^(" ~ whitespace* ~ parameters? ~ whitespace* ~ ")" ~ whitespace+ ~ "->" ~ t_type
 }
 
-t_string_literal = { "\"" ~ ANY* ~ "\"" }
+// https://pest.rs/book/examples/json.html#writing-the-grammar
+t_string_literal = ${
+  double_quote ~ dq_string_content ~ double_quote
+  | single_quote ~ sq_string_content ~ single_quote
+}
+double_quote = _{ "\"" }
+single_quote = _{ "'" }
+
+dq_string_content = @{ dq_string_char* }
+dq_string_char = { !double_quote ~ ANY }
+sq_string_content = @{ sq_string_char* }
+sq_string_char = { !single_quote ~ ANY }
 
 // https://gist.github.com/misfo/1072693
 t_symbol_literal = {
   ":" ~
   (
-    ("@" | "@@") ~ ("_" | ASCII_ALPHA)+       // <- instance var?
-    | "$" ~ (ASCII_DIGIT+ | "@" | "!" | "$" | "&" | "\"" | "'" | "/" | "." | "," | ";" | ":" | "`" | "~" | "\\" | "+")  // <- global var?
-    | slash_w+ ~ ("!" | "=" | "?")            // <- method name?
-    | t_string_literal
+    instance_variable | class_variable | global_variable | method_name | t_string_literal
   )
 }
 t_integer_literal = { ASCII_DIGIT+ ~ ("_" ~ ASCII_DIGIT)* }
+instance_variable = { "@" ~ ("_" | ASCII_ALPHA)+ }
+class_variable = { "@@" ~ ("_" | ASCII_ALPHA)+ }
+global_variable = {
+  "$" ~ (ASCII_DIGIT+ | "@" | "!" | "$" | "&" | "\"" | "'" | "/" | "." | "," | ";" | ":" | "`" | "~" | "\\" | "+")
+}
+method_name = { ("_" | ASCII_ALPHA_LOWER) ~ slash_w* ~ ("!" | "=" | "?")? }
 
 t_self = { "self" }
 t_instance = { "instance" }
@@ -101,10 +115,8 @@ keyword = { var_name }
 parameter = { (t_type ~ whitespace+ ~ var_name) | t_type }
 var_name = { ASCII_ALPHA_LOWER+ ~ slash_w* }
 
-method_name = { ASCII_ALPHA_LOWER+ ~ ("_" ~ slash_w*)* }
-
 //-----------------------------------------------------------------------------
 // Helpers
 //-----------------------------------------------------------------------------
-whitespace = _{ " " }
+whitespace = _{ " " | "\t" }
 slash_w = _{ ASCII_ALPHANUMERIC | "_" }
