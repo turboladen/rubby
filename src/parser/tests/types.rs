@@ -5,21 +5,24 @@ use pest::{consumes_to, parses_to};
 fn t_integer_literal_test() {
     assert!(RbsParser::parse(Rule::t_integer_literal, "foo").is_err());
 
-    let ruby = "1_2_3";
-
     parses_to! {
-        parser: RbsParser, input: ruby, rule: Rule::t_integer_literal,
+        parser: RbsParser, input: "1_2_3", rule: Rule::t_integer_literal,
         tokens: [
             t_integer_literal(0, 5),
         ]
     };
 
-    let ruby = "1_2_3_";
-
     parses_to! {
-        parser: RbsParser, input:  ruby, rule:   Rule::t_integer_literal,
+        parser: RbsParser, input: "1_2_3_", rule: Rule::t_integer_literal,
         tokens: [
             t_integer_literal(0, 5),
+        ]
+    };
+
+    parses_to! {
+        parser: RbsParser, input: "123_456_789", rule: Rule::t_integer_literal,
+        tokens: [
+            t_integer_literal(0, 11),
         ]
     };
 }
@@ -361,4 +364,57 @@ fn t_alias_name_test() {
             ])]
         };
     }
+}
+
+#[test]
+fn t_literal_test() {
+    assert!(RbsParser::parse(Rule::t_literal, "Foo").is_err());
+
+    parses_to! {
+        parser: RbsParser, input: r#""this is a string""#, rule: Rule::t_literal,
+        tokens: [t_literal(0, 18, [
+            t_string_literal(0, 18, [
+                dq_string_content(1, 17)
+            ])
+        ])]
+    };
+
+    parses_to! {
+        parser: RbsParser, input: r#"'this is a string'"#, rule: Rule::t_literal,
+        tokens: [t_literal(0, 18, [
+            t_string_literal(0, 18, [
+                sq_string_content(1, 17)
+            ])
+        ])]
+    };
+
+    parses_to! {
+        parser: RbsParser, input: ":symbol_mania_bro", rule: Rule::t_literal,
+        tokens: [t_literal(0, 17, [
+            t_symbol_literal(0, 17, [
+                method_name(1, 17)
+            ])
+        ])]
+    };
+
+    parses_to! {
+        parser: RbsParser, input: "123_456_789", rule: Rule::t_literal,
+        tokens: [t_literal(0, 11, [
+            t_integer_literal(0, 11)
+        ])]
+    };
+
+    parses_to! {
+        parser: RbsParser, input: "true", rule: Rule::t_literal,
+        tokens: [t_literal(0, 4, [
+            t_true(0, 4)
+        ])]
+    };
+
+    parses_to! {
+        parser: RbsParser, input: "false", rule: Rule::t_literal,
+        tokens: [t_literal(0, 5, [
+            t_false(0, 5)
+        ])]
+    };
 }

@@ -37,8 +37,8 @@ t_literal = {
   t_string_literal
   | t_symbol_literal
   | t_integer_literal
-  | "true"
-  | "false"
+  | t_true
+  | t_false
 }
 
 t_proc = {
@@ -65,13 +65,14 @@ t_symbol_literal = {
     instance_variable | class_variable | global_variable | method_name | t_string_literal
   )
 }
-t_integer_literal = { ASCII_DIGIT+ ~ ("_" ~ ASCII_DIGIT)* }
 instance_variable = { "@" ~ ("_" | ASCII_ALPHA)+ }
 class_variable = { "@@" ~ ("_" | ASCII_ALPHA)+ }
 global_variable = {
   "$" ~ (ASCII_DIGIT+ | "@" | "!" | "$" | "&" | "\"" | "'" | "/" | "." | "," | ";" | ":" | "`" | "~" | "\\" | "+")
 }
 method_name = { ("_" | ASCII_ALPHA_LOWER) ~ slash_w* ~ ("!" | "=" | "?")? }
+
+t_integer_literal = { ASCII_DIGIT+ ~ ("_"? ~ ASCII_DIGIT)* }
 
 // type_name = { namespace? ~ path_element }
 t_namespace = { 
@@ -89,6 +90,8 @@ t_nil = { "nil" }
 t_top = { "top" }
 t_bot = { "bot" }
 t_void = { "void" }
+t_true = { "true" }
+t_false = { "false" }
 
 
 
