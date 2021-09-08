@@ -308,3 +308,57 @@ fn t_interface_name_test() {
         };
     }
 }
+
+#[test]
+fn t_alias_name_test() {
+    assert!(RbsParser::parse(Rule::t_alias_name, "Foo").is_err());
+
+    // No namespace
+    {
+        parses_to! {
+            parser: RbsParser, input: "foo", rule: Rule::t_alias_name,
+            tokens: [t_alias_name(0, 3, [
+                alias(0, 3)
+            ])]
+        };
+
+        parses_to! {
+            parser: RbsParser, input: "fOO", rule: Rule::t_alias_name,
+            tokens: [t_alias_name(0, 3, [
+                alias(0, 3)
+            ])]
+        };
+
+        parses_to! {
+            parser: RbsParser, input: "fOoBaR", rule: Rule::t_alias_name,
+            tokens: [t_alias_name(0, 6, [
+                alias(0, 6)
+            ])]
+        };
+    }
+
+    // One namespace
+    {
+        parses_to! {
+            parser: RbsParser, input: "Foo::bar", rule: Rule::t_alias_name,
+            tokens: [t_alias_name(0, 8, [
+                t_namespace(0, 5, [path_element(0, 3)]),
+                alias(5, 8)
+            ])]
+        };
+    }
+
+    // Two namespaces
+    {
+        parses_to! {
+            parser: RbsParser, input: "Foo1::Bar2::baz3", rule: Rule::t_alias_name,
+            tokens: [t_alias_name(0, 16, [
+                t_namespace(0, 12, [
+                    path_element(0, 4),
+                    path_element(6, 10),
+                ]),
+                alias(12, 16)
+            ])]
+        };
+    }
+}
