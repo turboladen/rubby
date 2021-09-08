@@ -23,13 +23,10 @@ t_type = {
   | t_void
 }
 
-t_class_name = {
-    (t_namespace ~ path_element)
-    | path_element
-}
-t_interface_name = { t_namespace? ~ "_" ~ ASCII_ALPHA_UPPER ~ slash_w* }
-t_alias_name = { t_namespace? ~ ASCII_ALPHA_LOWER ~ slash_w* }
-t_type_variable = { ASCII_ALPHA_UPPER ~ slash_w* }
+t_class_name = { t_namespace? ~ path_element }
+t_interface_name = { t_namespace? ~ "_" ~ path_element }
+t_alias_name = { t_namespace? ~ path_element }
+t_type_variable = { path_element }
 
 t_type_arguments = {
   "[" ~ whitespace* ~ t_type ~ (whitespace* ~ "," ~ whitespace* ~ t_type)*

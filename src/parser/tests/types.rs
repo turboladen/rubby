@@ -253,3 +253,58 @@ fn t_class_name_test() {
         };
     }
 }
+
+#[test]
+fn t_interface_name_test() {
+    assert!(RbsParser::parse(Rule::t_interface_name, "foo").is_err());
+    assert!(RbsParser::parse(Rule::t_interface_name, "Foo").is_err());
+
+    // No namespace
+    {
+        parses_to! {
+            parser: RbsParser, input: "_Foo", rule: Rule::t_interface_name,
+            tokens: [t_interface_name(0, 4, [
+                path_element(1, 4)
+            ])]
+        };
+
+        parses_to! {
+            parser: RbsParser, input: "_FOO", rule: Rule::t_interface_name,
+            tokens: [t_interface_name(0, 4, [
+                path_element(1, 4)
+            ])]
+        };
+
+        parses_to! {
+            parser: RbsParser, input: "_FOO_BAR", rule: Rule::t_interface_name,
+            tokens: [t_interface_name(0, 8, [
+                path_element(1, 8)
+            ])]
+        };
+    }
+
+    // One namespace
+    {
+        parses_to! {
+            parser: RbsParser, input: "Foo::_Bar", rule: Rule::t_interface_name,
+            tokens: [t_interface_name(0, 9, [
+                t_namespace(0, 5, [path_element(0, 3)]),
+                path_element(6, 9)
+            ])]
+        };
+    }
+
+    // Two namespaces
+    {
+        parses_to! {
+            parser: RbsParser, input: "Foo1::Bar2::_Baz3", rule: Rule::t_interface_name,
+            tokens: [t_interface_name(0, 17, [
+                t_namespace(0, 12, [
+                    path_element(0, 4),
+                    path_element(6, 10),
+                ]),
+                path_element(13, 17)
+            ])]
+        };
+    }
+}
